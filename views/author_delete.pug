@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= title
+
+  if author_books.length
+    p Cannot delete author: #{author.name}. He has associated books.
+    ul
+      each book in author_books
+        li
+          a(href=book.url) #{book.title}
+  else
+    p Are you sure you want to delete author: <strong>#{author.name}</strong>?
+    form(method='POST')
+      input(type='hidden', name='authorid', value=author._id)
+      button.btn.btn-danger(type='submit') Delete

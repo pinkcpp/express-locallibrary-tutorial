@@ -1,0 +1,38 @@
+extends layout
+
+block content
+  h1= title
+
+  form(method='POST')
+    div.form-group
+      label(for='title') Title:
+      input#title.form-control(type='text', name='title' value=(book ? book.title : ''), required)
+
+    div.form-group
+      label(for='author') Author:
+      select#author.form-control(name='author', required)
+        option(value='') ---Select author---
+        each author in authors
+          option(value=author._id, selected=(book && book.author ? book.author._id.toString()===author._id.toString() : false)) #{author.name}
+
+    div.form-group
+      label(for='summary') Summary:
+      textarea#summary.form-control(name='summary' required) #{book ? book.summary : ''}
+
+    div.form-group
+      label(for='isbn') ISBN:
+      input#isbn.form-control(type='text', name='isbn' value=(book ? book.isbn : ''), required)
+
+    div.form-group
+      label Genre:
+      br
+      each genre in genres
+        input(type='checkbox' name='genre' value=genre._id checked=genre.checked)
+        |  #{genre.name}
+        br
+
+    if errors
+      each error in errors
+        p.text-danger= error.msg
+
+    button.btn.btn-primary(type='submit') Submit

@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1 Copy: #{bookinstance.book.title}
+  p <strong>Imprint:</strong> #{bookinstance.imprint}
+  p <strong>Status:</strong> #{bookinstance.status}
+  if bookinstance.status != 'Available'
+    p <strong>Due back:</strong> #{bookinstance.due_back_formatted}
+  p
+    a(href=bookinstance.book.url) Go to book
