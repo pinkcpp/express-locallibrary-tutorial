@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get("/", (req, res) => {
-  res.redirect("/catalog");
+// GET 首页：重定向到编目页
+router.get('/', (req, res) => {
+  res.redirect('/catalog');
 });
+
 module.exports = router;

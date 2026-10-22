@@ -1,14 +1,18 @@
-var express = require('express');
-var router = express.Router();
+/**
+ * 示例用户路由。
+ */
+const express = require('express');
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
+const router = express.Router();
+
+// GET 用户列表（示例）
+router.get('/', (req, res) => {
   res.send('respond with a resource');
 });
 
-router.get('/cool', function(req, res, next) {
+// GET 示例页面
+router.get('/cool', (req, res) => {
   res.send('你好酷');
 });
-
 
 module.exports = router;

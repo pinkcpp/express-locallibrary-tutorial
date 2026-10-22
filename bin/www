@@ -1,48 +1,40 @@
 #!/usr/bin/env node
 
 /**
- * Module dependencies.
+ * 应用启动入口：解析端口、创建 HTTP 服务、处理监听异常。
  */
 
-var app = require('../app');
-var debug = require('debug')('express-locallibrary-tutorial:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('express-locallibrary-tutorial:server');
+const http = require('http');
 
-/**
- * Get port from environment and store in Express.
- */
-
-var port = normalizePort(process.env.PORT || '3000');
+// 从环境变量读取端口并存入 Express 设置
+const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
+// 创建 HTTP 服务
+const server = http.createServer(app);
 
-var server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
+// 在所有网络接口上监听
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
 /**
- * Normalize a port into a number, string, or false.
+ * 将端口值规范化为数字、命名管道或 false。
+ * @param {string} val 端口字符串
+ * @returns {number|string|false} 规范化后的端口
  */
-
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
-  if (isNaN(port)) {
-    // named pipe
+  if (Number.isNaN(port)) {
+    // 命名管道
     return val;
   }
 
   if (port >= 0) {
-    // port number
+    // 端口号
     return port;
   }
 
@@ -50,26 +42,25 @@ function normalizePort(val) {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * HTTP 服务 error 事件监听器。
+ * @param {NodeJS.ErrnoException} error 监听错误
+ * @returns {void}
  */
-
 function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
 
-  // handle specific listen errors with friendly messages
+  // 针对常见监听错误给出友好提示
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      console.error(`${bind} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      console.error(`${bind} is already in use`);
       process.exit(1);
       break;
     default:
@@ -78,13 +69,11 @@ function onError(error) {
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * HTTP 服务 listening 事件监听器。
+ * @returns {void}
  */
-
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  const addr = server.address();
+  const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+  debug(`Listening on ${bind}`);
 }
