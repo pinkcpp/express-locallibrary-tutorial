@@ -140,19 +140,54 @@ exports.book_create_post = [
 ];
 
 /**
- * 通过 GET 显示删除图书（未实现）。
+ * GET /catalog/book/:id/delete：删除确认页，存在副本时禁止删除。
  * @type {import('express').RequestHandler}
  */
 exports.book_delete_get = async (req, res) => {
-  res.send('未实现：删除 GET');
+  const [book, bookInstances] = await Promise.all([
+    Book.findById(req.params.id),
+    BookInstance.find({ book: req.params.id }),
+  ]);
+
+  if (book === null) {
+    res.redirect('/catalog/books');
+    return;
+  }
+
+  res.render('book_delete', {
+    title: 'Delete Book',
+    book: book,
+    book_instances: bookInstances,
+  });
 };
 
 /**
- * 以 POST 方式处理删除图书（未实现）。
+ * POST /catalog/book/:id/delete：仅删除没有副本的图书。
  * @type {import('express').RequestHandler}
  */
 exports.book_delete_post = async (req, res) => {
-  res.send('未实现：删除 POST');
+  const [book, bookInstances] = await Promise.all([
+    Book.findById(req.params.id),
+    BookInstance.find({ book: req.params.id }),
+  ]);
+
+  if (book === null) {
+    res.redirect('/catalog/books');
+    return;
+  }
+
+  if (bookInstances.length > 0) {
+    // 还存在该图书的副本，禁止删除
+    res.render('book_delete', {
+      title: 'Delete Book',
+      book: book,
+      book_instances: bookInstances,
+    });
+    return;
+  }
+
+  await Book.findByIdAndDelete(req.params.id);
+  res.redirect('/catalog/books');
 };
 
 /**

@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+
+  if book_instances.length
+    p Cannot delete book: #{book.title}. The following copies still exist.
+    ul
+      each copy in book_instances
+        li
+          a(href=copy.url) #{copy.imprint} - #{copy.status}
+  else
+    p Are you sure you want to delete book: <strong>#{book.title}</strong>?
+    form(method='POST')
+      button.btn.btn-danger(type='submit') Delete

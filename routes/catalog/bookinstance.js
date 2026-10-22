@@ -17,9 +17,11 @@ router.post('/bookinstance/create', bookinstanceController.bookinstance_create_p
 // 副本详情
 router.get('/bookinstance/:id', bookinstanceController.bookinstance_detail);
 
-// 删除 / 更新（原实现未完成，处理器为占位实现）
-router.post('/bookinstance/:id/delete', bookinstanceController.bookinstance_delete_get);
+// 删除副本
+router.get('/bookinstance/:id/delete', bookinstanceController.bookinstance_delete_get);
 router.post('/bookinstance/:id/delete', bookinstanceController.bookinstance_delete_post);
+
+// 更新副本
 router.get('/bookinstance/:id/update', bookinstanceController.bookinstance_update_get);
 router.post('/bookinstance/:id/update', bookinstanceController.bookinstance_update_post);
 

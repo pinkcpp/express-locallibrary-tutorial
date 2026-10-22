@@ -79,3 +79,103 @@ exports.genre_create_post = [
     res.redirect(genre.url);
   },
 ];
+
+
+/**
+ * GET /catalog/genre/:id/delete：删除确认页，存在关联图书时禁止删除。
+ * @type {import('express').RequestHandler}
+ */
+exports.genre_delete_get = async (req, res) => {
+  const [genre, genreBooks] = await Promise.all([
+    Genre.findById(req.params.id),
+    Book.find({ genre: req.params.id }, 'title summary'),
+  ]);
+
+  if (genre === null) {
+    res.redirect('/catalog/genres');
+    return;
+  }
+
+  res.render('genre_delete', {
+    title: 'Delete Genre',
+    genre: genre,
+    genre_books: genreBooks,
+  });
+};
+
+/**
+ * POST /catalog/genre/:id/delete：仅删除没有关联图书的种类。
+ * @type {import('express').RequestHandler}
+ */
+exports.genre_delete_post = async (req, res) => {
+  const [genre, genreBooks] = await Promise.all([
+    Genre.findById(req.params.id),
+    Book.find({ genre: req.params.id }, 'title summary'),
+  ]);
+
+  if (genre === null) {
+    res.redirect('/catalog/genres');
+    return;
+  }
+
+  if (genreBooks.length > 0) {
+    // 还有图书属于该种类，禁止删除
+    res.render('genre_delete', {
+      title: 'Delete Genre',
+      genre: genre,
+      genre_books: genreBooks,
+    });
+    return;
+  }
+
+  await Genre.findByIdAndDelete(req.params.id);
+  res.redirect('/catalog/genres');
+};
+
+/**
+ * GET /catalog/genre/:id/update：渲染更新种类表单。
+ * @type {import('express').RequestHandler}
+ */
+exports.genre_update_get = async (req, res) => {
+  const genre = await Genre.findById(req.params.id);
+
+  if (genre === null) {
+    throw createError(404, 'Genre not found');
+  }
+
+  res.render('genre_form', {
+    title: 'Update Genre',
+    genre: genre,
+  });
+};
+
+/**
+ * POST /catalog/genre/:id/update：校验并更新种类，失败时回显表单。
+ * @type {import('express').RequestHandler[]}
+ */
+exports.genre_update_post = [
+  body('name', 'Genre name required').trim().isLength({ min: 3 }).escape(),
+
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    const genre = new Genre({
+      name: req.body.name,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render('genre_form', {
+        title: 'Update Genre',
+        genre: genre,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    const updatedGenre = await Genre.findByIdAndUpdate(req.params.id, genre, {});
+    res.redirect(updatedGenre.url);
+  },
+];
+
+

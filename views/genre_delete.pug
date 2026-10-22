@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+
+  if genre_books.length
+    p Cannot delete genre: #{genre.name}. The following books still use it.
+    ul
+      each book in genre_books
+        li
+          a(href=book.url) #{book.title}
+  else
+    p Are you sure you want to delete genre: <strong>#{genre.name}</strong>?
+    form(method='POST')
+      button.btn.btn-danger(type='submit') Delete

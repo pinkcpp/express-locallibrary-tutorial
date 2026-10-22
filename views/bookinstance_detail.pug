@@ -8,3 +8,9 @@ block content
     p <strong>Due back:</strong> #{bookinstance.due_back_formatted}
   p
     a(href=bookinstance.book.url) Go to book
+
+  hr
+  p
+    a(href=bookinstance.url+'/delete') Delete copy
+  p
+    a(href=bookinstance.url+'/update') Update copy

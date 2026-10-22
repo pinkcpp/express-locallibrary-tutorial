@@ -86,33 +86,99 @@ exports.bookinstance_create_post = [
 ];
 
 /**
- * 由 GET 显示删除 BookInstance 的表单（未实现）。
+ * GET /catalog/bookinstance/:id/delete：删除确认页。
  * @type {import('express').RequestHandler}
  */
 exports.bookinstance_delete_get = async (req, res) => {
-  res.send('未实现：BookInstance 删除 GET');
+  const bookInstance = await BookInstance.findById(req.params.id).populate('book');
+
+  if (bookInstance === null) {
+    res.redirect('/catalog/bookinstances');
+    return;
+  }
+
+  res.render('bookinstance_delete', {
+    title: 'Delete BookInstance',
+    bookinstance: bookInstance,
+  });
 };
 
 /**
- * 由 POST 删除 BookInstance（未实现）。
+ * POST /catalog/bookinstance/:id/delete：删除藏书副本。
  * @type {import('express').RequestHandler}
  */
 exports.bookinstance_delete_post = async (req, res) => {
-  res.send('未实现：BookInstance 删除 POST');
+  const bookInstance = await BookInstance.findById(req.params.id).populate('book');
+
+  if (bookInstance === null) {
+    res.redirect('/catalog/bookinstances');
+    return;
+  }
+
+  await BookInstance.findByIdAndDelete(req.params.id);
+  res.redirect('/catalog/bookinstances');
 };
 
 /**
- * 由 GET 显示更新 BookInstance 的表单（未实现）。
+ * GET /catalog/bookinstance/:id/update：渲染更新副本表单。
  * @type {import('express').RequestHandler}
  */
 exports.bookinstance_update_get = async (req, res) => {
-  res.send('未实现：BookInstance 更新 GET');
+  const [bookInstance, allBooks] = await Promise.all([
+    BookInstance.findById(req.params.id).populate('book'),
+    Book.find({}, 'title'),
+  ]);
+
+  if (bookInstance === null) {
+    throw createError(404, 'Book copy not found');
+  }
+
+  res.render('bookinstance_form', {
+    title: 'Update BookInstance',
+    book_list: allBooks,
+    selected_book: bookInstance.book._id,
+    bookinstance: bookInstance,
+  });
 };
 
 /**
- * 由 POST 处理 BookInstance 更新（未实现）。
- * @type {import('express').RequestHandler}
+ * POST /catalog/bookinstance/:id/update：校验并更新副本，失败时回显表单。
+ * @type {import('express').RequestHandler[]}
  */
-exports.bookinstance_update_post = async (req, res) => {
-  res.send('未实现：BookInstance 更新 POST');
-};
+exports.bookinstance_update_post = [
+  body('book', 'Book must be specified').trim().isLength({ min: 1 }),
+  body('imprint', 'Imprint must be specified').trim().isLength({ min: 1 }),
+  body('status').trim().notEmpty(),
+  body('due_back', 'Invalid date').optional({ values: 'falsy' }).isISO8601(),
+
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    const bookInstance = new BookInstance({
+      book: req.body.book,
+      imprint: req.body.imprint,
+      status: req.body.status,
+      due_back: req.body.due_back,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      const allBooks = await Book.find({}, 'title');
+      res.render('bookinstance_form', {
+        title: 'Update BookInstance',
+        book_list: allBooks,
+        selected_book: bookInstance.book,
+        bookinstance: bookInstance,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    const updatedBookInstance = await BookInstance.findByIdAndUpdate(
+      req.params.id,
+      bookInstance,
+      {}
+    );
+    res.redirect(updatedBookInstance.url);
+  },
+];

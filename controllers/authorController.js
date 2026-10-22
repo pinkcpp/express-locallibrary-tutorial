@@ -142,17 +142,61 @@ exports.author_delete_post = async (req, res) => {
 };
 
 /**
- * 由 GET 显示更新作者的表单（未实现）。
+ * GET /catalog/author/:id/update：渲染更新作者表单。
  * @type {import('express').RequestHandler}
  */
 exports.author_update_get = async (req, res) => {
-  res.send('未实现：更新作者的 GET');
+  const author = await Author.findById(req.params.id);
+
+  if (author === null) {
+    throw createError(404, 'Author not found');
+  }
+
+  res.render('author_form', {
+    title: 'Update Author',
+    author: author,
+  });
 };
 
 /**
- * 由 POST 处理作者更新操作（未实现）。
- * @type {import('express').RequestHandler}
+ * POST /catalog/author/:id/update：校验并更新作者，失败时回显表单。
+ * @type {import('express').RequestHandler[]}
  */
-exports.author_update_post = async (req, res) => {
-  res.send('未实现：更新作者的 POST');
-};
+exports.author_update_post = [
+  body('first_name')
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage('First name must be specified.'),
+  body('family_name')
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage('Family name must be specified.'),
+  body('date_of_birth', 'Invalid date of birth').optional({ values: 'falsy' }).isISO8601(),
+  body('date_of_death', 'Invalid date of death').optional({ values: 'falsy' }).isISO8601(),
+
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    const author = new Author({
+      first_name: req.body.first_name,
+      family_name: req.body.family_name,
+      date_of_birth: req.body.date_of_birth,
+      date_of_death: req.body.date_of_death,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render('author_form', {
+        title: 'Update Author',
+        author: author,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    const updatedAuthor = await Author.findByIdAndUpdate(req.params.id, author, {});
+    res.redirect(updatedAuthor.url);
+  },
+];
