@@ -4,6 +4,10 @@
  * 应用启动入口：解析端口、创建 HTTP 服务、处理监听异常。
  */
 
+// 未显式指定环境时按生产环境运行（npm start / node ./bin/www），连接 Atlas 云端库；
+// 本地开发请使用 npm run dev（development，连接本地库）
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+
 const app = require('../app');
 const debug = require('debug')('express-locallibrary-tutorial:server');
 const http = require('http');
